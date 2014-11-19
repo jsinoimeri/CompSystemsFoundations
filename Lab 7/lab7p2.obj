@@ -1,0 +1,53 @@
+3 52 124 166   
+0000150printStrpush AX20
+0001156push SI20
+0002152push DX20
+00033BAE904mov DX, 04E9H20
+000628A04LoopPSmov AL, [SI]20
+000823C24cmp AL, '$'20
+000A27405je quitPS20
+000C1EEout DX, AL20
+000D146inc SI20
+000E3E9F5FFjmp LoopPS20
+001115AquitPSpop DX20
+001215Epop SI20
+0013158pop AX20
+00141C3ret20
+0015150newLinepush AX20
+0016152push DX20
+00173BAE904mov DX, 04E9H20
+001A2B00Amov AL, 0AH20
+001C1EEout DX, AL20
+001D2B00Dmov AL, 0DH20
+001F1EEout DX, AL20
+002015Apop DX20
+0021158pop AX20
+00221C3ret20
+0023152getCharpush DX20
+00243BA6400GCWaitmov DX, 64H20
+00271ECin AL, DX20
+002823C00cmp AL, 020
+002A274F8jz GCWait20
+002C3BA6000mov DX, 60H20
+002F1ECin AL, DX20
+003015AGCDonepop DX20
+00311C3ret20
+003237456E74657220616E206576656E206E756D626572206265747765656E205B302D395D3A2024Message1'Enter an even number between [0-9]: $'20
+005737436F6E677261647320697420697320612076616C6964206576656E206E756D6265722E2024Message2'Congrads it is a valid even number. $'20
+007C3BE3200mainmov SI, Message120
+007F3E893FFcall newLine20
+00823E87BFFcall printStr20
+00853E88DFFcall newLine20
+00883E898FFcall getChar20
+008B3BAE904mov DX, 04E9H20
+008E1EEout DX, AL20
+008F23C30cmp AL, 30H20
+0091276E9jbe main20
+009323C39cmp AL, 39H20
+0095277E5ja main20
+00973C0E801shr AL, 120
+009A272E0jc main20
+009C3BE5700mov SI, Message220
+009F3E873FFcall newLine20
+00A23E85BFFcall printStr20
+00A51F4hlt20

@@ -1,0 +1,70 @@
+<html>
+<h1>SYSC 2001 - LAB 7</h1>
+<head>
+<title> SYSC 2001 - Lab 7: Polling </title>
+<body>
+<h3>What is polling?</h3>
+
+<p>Polling is a technique used to transfer data from system to I/O devices.</p>
+
+<h3>Why do we need polling?</h3>
+
+<p>Sometimes, we need the system to transfer data to I/O devices. For example, consider a printer driver. The printer can only accept one byte at a time. When we want to print a document, the printer driver has to check the STATUS register to see if the printer's <i>"buffer"</i> is empty (i.e. that it is ready to accept a new character), only then it can pass the next byte. Hence, it has to keep checking for an empty buffer and only then send data to the printer. Polling comes in handy in such situations. The same holds true for input devices such as keyboards. If the CPU is expecting an input from a keyboard, it has to first check a STATUS register (at port <code>0064h</code>). If a key has been pressed, the value of the STATUS register will be non-zero. If the STATUS register is zero, then no key has been pressed so the CPU should wait and check again. If a key has been pressed, then the CPU should read the ASCII value of the key from the <code>data BUFFER register</code> (at port <code>0060h</code>).</p>
+
+<h3>How is polling implemented?</h3>
+
+<p>Polling is implemented in the following sequence:</br>
+		
+		Step 1: Check device STATUS port, to see if device is ready to accept new data (output device) or has new data available (input device).</br>
+		Step 2: If the device is ready, read or write data from/to device using the BUFFER port.</br>
+		Step 3: Repeat Step 1.</p>
+		
+<p>For example, let us say that we need the program to accept a key from the keyboard. First, we check the keyboard STATUS port to see whether there is any input. If yes, load the ASCII value of the pressed key into a register; else keep checking.
+
+<p>A polling loop is illustrated below:<br>
+<img src = "http://www.sce.carleton.ca/courses/sysc-2001/f13/Lab7-PollingLoop-Flowchart.png" alt = "Flowchart of polling loop">
+
+
+<h3>The <code>IN</code> Instruction</h3>
+
+<p>
+<blockquote>
+	<i>Syntax</i>: <code>IN reg, addr</code></br>
+	<i>reg</i>: <code>AL</code> for 8 bit; <code>AX</code> for 16 bit</br>
+	<i>addr</i>: Address of input device port. In Libra, the <b>address must be specified using <code>DX</code></b></br>
+	<i>Description</i>: Loads the <code>AL/AX</code> register with input from input device.</p>
+<code><pre>
+eg:  MOV DX, 0004h		; Load DX with the port number (0004)
+     IN AL, DX		; Read 8 bit value from input device with port # 0004h
+     IN AX, DX		; Read 16 bit value from input device with port # 0004h</pre></code>
+</blockquote>
+		
+<h3> Libra Keyboard </h3> 
+<P> To access the keyboard key pressed, we need two port numbers (addresses), namely, the keyboard STATUS port port number and the keyboard BUFFER port number.
+The STATUS port number is <code>0064h</code>. When a key is pressed, it changes to a non-zero value. That's when we know that a key has been pressed. 
+So where is the character from the keyboard stored? It is stored in in the keyboard BUFFER. The BUFFER port address of Libra keyboard is <code>0060h</code>. </P>		
+
+<h3>How to use the keyboard in Libra</h3>
+<p>When the Libra window is in focus, all keypresses will be sent to Libra.
+		
+<h3>Part 1:</h3>
+<p><strong>Complete the code given in <code>lab7p1.asm</code></strong> to request the user to enter <code>'y'</code> to quit; else the program keeps polling for input. Use the <code>printStr</code> and <code>newline</code> subroutines from Lab 5 (i.e. the version that passes parameters using registers instead of using the stack). The input character should be echoed to the screen.
+
+<p>Flowchart for Part 1:<p>
+
+<img src = "http://www.sce.carleton.ca/courses/sysc-2001/f13/Lab7-P1-Flowchart.png" alt = "Flowchart of Lab 7 Part 1">
+
+<p>Here is a more detailed flowchart prepared by Revanth:<p>
+<img src = "http://www.sce.carleton.ca/courses/sysc-2001/f13/lab7p1.png" alt="Detailed flow chart for Part 1">
+
+<p>Once your code is working, run your program. While it is running <b>press the pause button -- what is the value of the <code>IP</code> register? Explain why you just happened to stop at this line.</b>
+<p><strong>Stop and demo your working program to at TA.</strong>
+
+
+<h3>Part 2:</h3>
+<p>Make a copy of your <code>lab7p1.asm</code> file and call it <code>lab7p2.asm</code>. <b>Modify the program</b> to prompt the user to enter an EVEN number between 0-9. If the user enters a valid EVEN number, then print a happy message on the screen and quit. Otherwise, reprompt the user to enter a new EVEN number.
+<p> You have to <b>create a flowchart</b> explaining the flow of logic before you start programming part 2. Call the TA to get the flowchart checked and then start working on the code. There are marks for the flowchart</p>
+<p><i>Remember, any value you get from the keyboard will be in ASCII, so you will have to convert your ASCII key code to a number in order to get the entered value.</i></p> 
+					
+</body>
+</html>

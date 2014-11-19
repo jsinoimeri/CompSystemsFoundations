@@ -1,0 +1,126 @@
+					; Lab7b Part I - Subroutine to prompt the user to enter a key
+					;				get a character from the keyboard
+					; 				and check if the user presses 'y'
+					
+					; Constant definitions
+					DISPLAY	.EQU 04E9h	; address of Libra display
+					
+					
+					;---------------------------
+					;Insert subroutines printStr and newLine from Lab 5 here
+					;---------------------------
+					;;;;;;;;;;;;;;;;;
+					; printStr: Subroutine to print a '$'-terminated string
+					; Input parameters:
+					; 	SI: Address of start of string to be printed
+					; Output parameters:
+					;	None.
+					printStr:
+						; Save registers modified by this subroutine
+0000	50			PUSH AX			; Push AX into Stack
+0001	56			PUSH SI			; Push SI into Stack
+0002	52			PUSH DX			; Push DX into Stack
+					
+0003	BAE904			MOV DX, DISPLAY
+					LoopPS:
+0006	8A04			MOV AL, [SI]	; Load the next char to be printed - USING INPUT PARAMETER SI
+0008	3C24			CMP AL, '$'		; Compare the char to '$'
+000A	7405			JE quitPS		; If it is equal, then quit subroutine and return to calling code
+000C	EE			OUT DX,AL		; If it is not equal to '$', then print it
+000D	46			INC SI			; Point to the next char to be printed
+000E	E9F5FF			jmp LoopPS		; Jump back to the top of the loop
+					quitPS:
+						; Restore registers
+0011	5A			POP DX			; POP DX from Stack
+0012	5E			POP SI			; POP SI from Stack
+0013	58			POP AX			; POP AX from Stack
+					
+0014	C3			RET
+						
+						
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh		; ASCII value for Carriage return
+					s_LF .EQU 0Ah		; ASCII value for NewLine
+					
+					newLine:
+						; Save registers modified by this subroutine
+0015	50			PUSH AX			; Push AX into Stack
+0016	52			PUSH DX			; Push DX into Stack
+						
+0017	BAE904			MOV DX, DISPLAY		; Initialize the output port number in DX
+001A	B00A			MOV AL, s_LF		; Load line feed (LF) into AL
+001C	EE			out DX,AL		; print the char
+001D	B00D			MOV AL, s_CR		; Load carriage return (CR) into AL
+001F	EE			out DX,AL		; print the char
+						
+						; Restore registers
+0020	5A			POP DX			; POP DX from Stack
+0021	58			POP AX			; POP AX from Stack
+						
+0022	C3			RET	
+						
+					;---------------------------
+					;End of subroutines printStr and newLine from Lab 5 here
+					;---------------------------
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; getChar: waits for a keypress and returns pressed key in AL
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: ASCII Value of key pressed by user
+					
+					; Constants used by this subroutine
+					KBSTATUS .EQU 64h			; FIX ME port number of keyboard STATUS reg
+					KBBUFFER .EQU 60h			; FIX ME port number of keyboard BUFFER reg
+					
+					getChar:
+0023	52			push DX        ; save reg used
+					GCWait:
+0024	BA6400			MOV DX, KBSTATUS				; load addr of keybrd STATUS
+0027	EC			IN AL, DX				; Read contents of keyboard STATUS register
+0028	3C00			CMP AL, 0				; key pressed?
+002A	74F8			JZ GCWait				; no, go back and check again for keypress
+					
+002C	BA6000			MOV DX, KBBUFFER				; load port number of kbrd BUFFER register
+002F	EC			IN AL, DX				; get key into AL from BUFFER
+					GCDone:
+0030	5A			pop DX        	; restore regs
+0031	C3			ret
+					
+						
+0032	446F2079..		Message1: .DB	'Do you want to quit? (y/n)$'		; Message to be printed on screen
+							
+					;;;;;;;;;;;;;
+					; Main function: Asks the user whether they want to quit or not. 
+					; 				Repeats until user presses 'y'
+					;
+					;				Uses printStr, newline, and getChar subroutines.
+					main:
+004D	BE3200					MOV SI, 	Message1					;Move starting address of Message1 to SI
+0050	E8C2FF					Call newLine						;Print a new line
+0053	E8AAFF					Call printStr					;Call prtstr to print Message1
+0056	E8BCFF					Call newLine						;Print a new line
+								
+0059	E8C7FF					Call getChar						;call Getchar to get value from keyboard
+005C	E8B6FF					Call newLine						;Print a new line
+								
+005F	BAE904					mov DX, DISPLAY
+0062	EE					out DX, AL						; Echo the character back to the display
+														
+														
+0063	3C79					CMP AL, 'y'						; compare input character with 'y'
+0065	75E6					JNZ main						;If user did not press 'y', then re-prompt (start over)
+						;Quit
+0067	F4			HLT
+						
+						
+					
