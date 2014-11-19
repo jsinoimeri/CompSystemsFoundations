@@ -1,0 +1,191 @@
+					; Lab6-P1 - Subroutines to print integers, digits, and salaries
+					
+					; Constant definitions
+					Display	.EQU 04E9h	; address of Libra display
+					
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;  START OF SUBROUTINES to COPY to lab6-P2.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+					;;;;;;;;;;;;;;;;;
+					; printInt: Subroutine to print a 1-byte unsigned (short) integer between 0-255
+					; Input parameters:
+					; 	Stack: Unsigned short int to be printed
+					; Output parameters:
+					;	None.
+					printInt:
+						; Save registers modified by this subroutine
+0000	50			PUSH AX
+0001	51			PUSH CX
+0002	55			PUSH BP			; FIX ME
+						
+						; Retrieve input parameter from stack into AL
+0003	89E5			MOV BP, SP			; FIX ME - make a copy of SP
+0005	8A4608			MOV AL, [BP + 8]			; FIX ME - read from the appropriate slot of your stack frame
+						
+0008	B10A			MOV CL, 10		; Will be dividing by 10...
+						
+					LoopPI:
+000A	3C0A			CMP AL, 10		; Compare the number to 10
+000C	7C0E			JL printLast	; If it is less than 10, then print this digit
+						; If it is greater than 10, divide by 10
+000E	B400			MOV AH, 0		; Clear AH
+0010	F6F1			DIV CL			; Divide number by 10
+0012	50			PUSH AX				; FIX ME - Push the input parameter of printDigit onto the stack
+0013	E80F00			CALL printDigit ; Print the quotient in AL
+0016	58			POP AX				; FIX ME - Pop the input parameter of printDigit back off the stack
+0017	88E0			MOV AL, AH		; Move remainder into AL to be printed
+0019	E9EEFF			jmp LoopPI		; Jump back to the top of the loop
+					printLast:
+001C	50			PUSH AX				; FIX ME - Push the input parameter of printDigit onto the stack
+001D	E80500			CALL printDigit ; Print the quotient in AL
+0020	58			POP AX				; FIX ME - Pop the input parameter of printDigit back off the stack
+					
+						; Restore registers
+0021	5D			POP BP			; FIX ME
+0022	59			POP CX
+0023	58			POP AX
+						
+0024	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; printDigit: Subroutine to print a single decimal digit
+					; Input parameters:
+					; 	Stack: Unsigned decimal digit (between 0-9) to be printed
+					; Output parameters:
+					;	None.
+					printDigit:
+						; Save registers modified by this subroutine
+0025	50			PUSH AX
+0026	52			PUSH DX
+0027	55			PUSH BP			; FIX ME
+						
+						; Retrieve input parameter from stack into AL
+0028	89E5			MOV BP, SP			; FIX ME - make a copy of SP
+002A	8A4608			MOV AL, [BP + 8]			; FIX ME - read from the appropriate slot of your stack frame
+						
+002D	BAE904			MOV DX, Display
+0030	0430			ADD AL, '0'		; Convert number to ASCII code
+0032	EE			OUT DX,AL		; Print it
+						
+						; Restore registers
+0033	5D			POP BP			; FIX ME
+0034	5A			POP DX
+0035	58			POP AX
+						
+0036	C3			RET
+						
+							
+					;;;;;;;;;;;;;;;;;
+					; printSalary: Subroutine to print employee salary
+					; Input parameters:
+					; 	Stack: Unsigned short int (0-255) representing salary in 1000's of $
+					; Output parameters:
+					;	None.
+					
+					printSalary:
+						; Save registers modified by this subroutine
+0037	50			PUSH AX
+0038	56			PUSH SI				; Not strictly necessary, but please keep
+0039	52			PUSH DX
+003A	55			PUSH BP				; FIX ME
+						
+						; Retrieve input parameter from stack into AL
+003B	89E5			MOV BP, SP				; FIX ME - make a copy of SP
+003D	8A460A			MOV AL, [BP + 10]				; FIX ME - read from the appropriate slot of your stack frame
+						
+0040	BAE904			MOV DX, Display
+						
+0043	88C4			MOV AH,AL			; Keep a copy of the salary in AH (need AL for printing...)
+0045	B024			MOV AL, '$'			; Print '$' preceeding number
+0047	EE			OUT DX,AL			; Print it
+0048	88E0			MOV AL,AH			; Move salary back into AL
+004A	50			PUSH AX					; FIX ME - Push the input parameter of printInt onto the stack
+004B	E8B2FF			CALL printInt		; Print the salary (0-255)
+004E	58			POP AX					; FIX ME - Pop the input parameter of printInt back off the stack
+					
+004F	B02C			MOV AL, ','			; Print ',' after number
+0051	EE			OUT DX,AL			; Print it
+0052	B030			MOV AL, '0'			; Print '0' after comma
+0054	EE			OUT DX,AL			; Print a zero
+0055	EE			OUT DX,AL			; Print a zero
+0056	EE			OUT DX,AL			; Print a zero
+						
+						; Restore registers
+0057	5D			POP BP 				; FIX ME
+0058	5A			POP DX
+0059	5E			POP SI
+005A	58			POP AX
+						
+005B	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh		; ASCII value for Carriage return
+					s_LF .EQU 0Ah		; ASCII value for NewLine
+					
+					newLine:
+						; Save registers modified by this subroutine
+005C	50			PUSH AX
+005D	52			PUSH DX
+						
+005E	BAE904			MOV DX, Display		; Initialize the output port number in DX
+0061	B00A			MOV AL, s_LF		; Load line feed (LF) into AL
+0063	EE			out DX,AL			; print the char
+0064	B00D			MOV AL, s_CR		; Load carriage return (CR) into AL
+0066	EE			out DX,AL			; print the char
+						
+						; Restore registers
+0067	5A			POP DX
+0068	58			POP AX
+						
+0069	C3			RET
+						
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; END OF SUBROUTINES FOR lab6-P2.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+							
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; Test data
+					;
+					
+					.ORG 00A0h
+					
+00A0	56		num1: .DB 86					; Should print as decimal 86
+00A1	22		sal1: .DB 34 				; Should print as '$34,000'
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+					; main: Main function to test all subroutines
+					.ORG 00B0h
+					
+					main:
+					
+						; Print a short unsigned int (0-99). Use num1
+00B0	8A06A000			MOV AL, [num1]					; FIX ME - get input parameter
+00B4	50			PUSH AX							; FIX ME - place input parameter on stack
+00B5	E848FF			CALL printInt
+00B8	58			POP AX							; FIX ME - remove input parameter from stack
+00B9	E8A0FF			CALL newLine
+						
+						; Print a salary. Use sal1
+00BC	8A06A100			MOV AL, [sal1]					; FIX ME - get input parameter
+00C0	50			PUSH AX							; FIX ME - place input parameter on stack
+00C1	E873FF			CALL printSalary
+00C4	58			POP AX							; FIX ME - remove input parameter from stack
+00C5	E894FF			CALL newLine
+						
+						;Quit
+00C8	F4			HLT
+						
+						
+					

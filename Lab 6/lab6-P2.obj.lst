@@ -1,0 +1,327 @@
+					; Lab6 - Subroutine to retrive and print a salary from 
+					;		  an Employee record from an array of structures
+					
+					; Constant definitions
+					Display	.EQU 04E9h	; address of Libra display
+					
+					; Offsets to access individual fields within the records
+					ID			.EQU 0	; Zero bytes from start of record is ID
+					NAME 		.EQU 1	; One byte from start of record is name
+					GENDER 		.EQU 3	; 3 bytes from start of record is gender
+					SALARY 		.EQU 4	; 4 bytes from start of record is salary
+					REC_SIZE	.EQU 5	; Total size of each record is 5 bytes
+					
+					
+					;;;;;;;;;;;;;;;;;;;;
+					; Function: getSalary
+					; Function to retrive the salary of the specified employee record.
+					;
+					; Input Parameters:
+					; 	Stack: 16-bit address of start of array of structures
+					;	Stack: 8-bit record number to be printed (record numbering starts at 0)
+					; Output Paramters:
+					;	Stack: returns 8-bit salary of specified Employee record
+					getSalary:
+						; Save register values that will be modified in this routine
+0000	50				PUSH AX	
+0001	56				PUSH SI	
+0002	53				PUSH BX	
+					
+						; Get input parameters from the stack. 
+						; Use SI for the start address of the array of structures
+						; Use AL for record number
+0003	89E6				MOV SI, SP				
+0005	8B5C08				MOV BX, [SI + 8]	
+0008	8A440A			 	MOV AL, [SI + 10]	
+						
+						; Calculate OFFSET of this record (distance from starting address of array of structures)
+						; Offset is REC_NUM*REC_SIZE)
+000B	B405				MOV AH, REC_SIZE	
+000D	F6E4				MUL AH						
+000F	89C7				MOV DI, AX				
+					
+						; For the next instruction, you MUST USE BASED-INDEXED Addressing mode (look it up!)
+0011	8A4104				MOV AL, [BX + DI + SALARY]			
+					
+0014	88440C				MOV [SI + 12], AL				
+						
+						; Restore registers
+0017	5B				 POP BX						
+0018	5E				 POP SI						
+0019	58				 POP AX						
+					
+						; Return to calling function
+001A	C3			RET						
+					
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; INSERT SUBROUTINES FROM lab6-P1.asm HERE
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;
+					; printInt: Subroutine to print a 1-byte unsigned (short) integer between 0-255
+					; Input parameters:
+					; 	Stack: Unsigned short int to be printed
+					; Output parameters:
+					;	None.
+					printInt:
+						; Save registers modified by this subroutine
+001B	50			PUSH AX
+001C	51			PUSH CX
+001D	55			PUSH BP		
+						
+						; Retrieve input parameter from stack into AL
+001E	89E5			MOV BP, SP			; make a copy of SP
+0020	8A4608			MOV AL, [BP + 8]			; read from the appropriate slot of your stack frame
+						
+0023	B10A			MOV CL, 10		; Will be dividing by 10...
+						
+					LoopPI:
+0025	3C0A			CMP AL, 10		; Compare the number to 10
+0027	7C0E			JL printLast	; If it is less than 10, then print this digit
+						; If it is greater than 10, divide by 10
+0029	B400			MOV AH, 0		; Clear AH
+002B	F6F1			DIV CL			; Divide number by 10
+002D	50			PUSH AX				; Push the input parameter of printDigit onto the stack
+002E	E80F00			CALL printDigit ; Print the quotient in AL
+0031	58			POP AX				; Pop the input parameter of printDigit back off the stack
+0032	88E0			MOV AL, AH		; Move remainder into AL to be printed
+0034	E9EEFF			jmp LoopPI		; Jump back to the top of the loop
+					printLast:
+0037	50			PUSH AX				; Push the input parameter of printDigit onto the stack
+0038	E80500			CALL printDigit ; Print the quotient in AL
+003B	58			POP AX				; Pop the input parameter of printDigit back off the stack
+					
+						; Restore registers
+003C	5D			POP BP			; 
+003D	59			POP CX
+003E	58			POP AX
+						
+003F	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; printDigit: Subroutine to print a single decimal digit
+					; Input parameters:
+					; 	Stack: Unsigned decimal digit (between 0-9) to be printed
+					; Output parameters:
+					;	None.
+					printDigit:
+						; Save registers modified by this subroutine
+0040	50			PUSH AX
+0041	52			PUSH DX
+0042	55			PUSH BP		
+						
+						; Retrieve input parameter from stack into AL
+0043	89E5			MOV BP, SP			; make a copy of SP
+0045	8A4608			MOV AL, [BP + 8]			; read from the appropriate slot of your stack frame
+						
+0048	BAE904			MOV DX, Display
+004B	0430			ADD AL, '0'		; Convert number to ASCII code
+004D	EE			OUT DX,AL		; Print it
+						
+						; Restore registers
+004E	5D			POP BP			; 
+004F	5A			POP DX
+0050	58			POP AX
+						
+0051	C3			RET
+						
+							
+					;;;;;;;;;;;;;;;;;
+					; printSalary: Subroutine to print employee salary
+					; Input parameters:
+					; 	Stack: Unsigned short int (0-255) representing salary in 1000's of $
+					; Output parameters:
+					;	None.
+					
+					printSalary:
+						; Save registers modified by this subroutine
+0052	50			PUSH AX
+0053	56			PUSH SI				; Not strictly necessary, but please keep
+0054	52			PUSH DX
+0055	55			PUSH BP			
+						
+						; Retrieve input parameter from stack into AL
+0056	89E5			MOV BP, SP				; make a copy of SP
+0058	8A460A			MOV AL, [BP + 10]				; read from the appropriate slot of your stack frame
+						
+005B	BAE904			MOV DX, Display
+						
+005E	88C4			MOV AH,AL			; Keep a copy of the salary in AH (need AL for printing...)
+0060	B024			MOV AL, '$'			; Print '$' preceeding number
+0062	EE			OUT DX,AL			; Print it
+0063	88E0			MOV AL,AH			; Move salary back into AL
+0065	50			PUSH AX					; Push the input parameter of printInt onto the stack
+0066	E8B2FF			CALL printInt		; Print the salary (0-255)
+0069	58			POP AX					; Pop the input parameter of printInt back off the stack
+					
+006A	B02C			MOV AL, ','			; Print ',' after number
+006C	EE			OUT DX,AL			; Print it
+006D	B030			MOV AL, '0'			; Print '0' after comma
+006F	EE			OUT DX,AL			; Print a zero
+0070	EE			OUT DX,AL			; Print a zero
+0071	EE			OUT DX,AL			; Print a zero
+						
+						; Restore registers
+0072	5D			POP BP 			
+0073	5A			POP DX
+0074	5E			POP SI
+0075	58			POP AX
+						
+0076	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh		; ASCII value for Carriage return
+					s_LF .EQU 0Ah		; ASCII value for NewLine
+					
+					newLine:
+						; Save registers modified by this subroutine
+0077	50			PUSH AX
+0078	52			PUSH DX
+						
+0079	BAE904			MOV DX, Display		; Initialize the output port number in DX
+007C	B00A			MOV AL, s_LF		; Load line feed (LF) into AL
+007E	EE			out DX,AL			; print the char
+007F	B00D			MOV AL, s_CR		; Load carriage return (CR) into AL
+0081	EE			out DX,AL			; print the char
+						
+						; Restore registers
+0082	5A			POP DX
+0083	58			POP AX
+						
+0084	C3			RET
+					
+						
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; END OF SUBROUTINES FROM lab6-P1.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+							
+					;;;;;;;;;;;;;;;;;;;;;;;;	
+					; main: Main function to test all subroutines
+					main:
+					
+						; Print salary of dayShiftDB[0]
+0085	BB0050			MOV BX, dayShiftDB
+0088	B000			MOV AL, 0
+008A	51			PUSH CX				
+008B	50			PUSH AX				
+008C	53			PUSH BX				
+008D	E870FF			CALL getSalary
+0090	5B			POP BX				
+0091	58			POP AX				
+0092	E8BDFF			call printSalary
+0095	E8DFFF			CALL newLine
+0098	59			POP CX						
+						
+						; Print dayShiftDB[3] 
+					
+0099	BB0050				MOV BX, dayShiftDB
+009C	B003				MOV AL, 3
+009E	51				PUSH CX					
+009F	50				PUSH AX					
+00A0	53				PUSH BX					
+00A1	E85CFF				CALL getSalary	
+00A4	5B				POP BX					
+00A5	58				POP AX					
+00A6	E8A9FF				call printSalary
+00A9	E8CBFF				CALL newLine
+00AC	59				POP CX					
+					
+					
+					
+					
+					
+					
+					
+					
+						
+						; Print nightShiftDB[0]
+						
+00AD	BB1450				MOV BX, nightShiftDB
+00B0	B000				MOV AL, 0
+00B2	51				PUSH CX					
+00B3	50				PUSH AX					
+00B4	53				PUSH BX					
+00B5	E848FF				CALL getSalary	
+00B8	5B				POP BX					
+00B9	58				POP AX					
+00BA	E895FF				call printSalary
+00BD	E8B7FF				CALL newLine
+00C0	59				POP CX					
+					
+					
+					
+					
+					
+					
+					
+						
+						;Quit
+00C1	F4			HLT
+						
+						
+					;;;;;;;;;;;;;;;;;;;;;;;;
+					; Test data
+					;
+					
+					; Record format:
+					;Struct Employee {
+					;	char* name;	// 2-byte pointer to string of chars
+					;	bool gender;	// 1-byte Boolean (zero-->male, else-->female)
+					;	short salary;	// 1-byte unsigned short int salary (in $1000’s)
+					;	int id;		// 1-byte unsigned integer ID
+					;};
+					.ORG 5000h
+					
+					dayShiftDB:
+						; Record dayShiftDB[0]
+5000	0C			.DB 12			; dayShiftDB[0].id
+5001	1E50			.DW name0		; dayShiftDB[0].name
+5003	00			.DB 0			; dayShiftDB[0].gender
+5004	32			.DB 50			; dayShiftDB[0].salary
+						
+						; Record dayShiftDB[1]
+5005	1B			.DB 27
+5006	2850			.DW name1		
+5008	01			.DB 1
+5009	3A			.DB 58
+						
+						; Record dayShiftDB[2]
+500A	01			.DB 1
+500B	3450			.DW name2		
+500D	01			.DB 1
+500E	46			.DB 70
+					
+						; Record dayShiftDB[3]
+500F	4D			.DB 77
+5010	4150			.DW name3		
+5012	00			.DB 0
+5013	20			.DB 32
+					
+					nightShiftDB:
+5014	07			.DB 7
+5015	4E50			.DW name4		; Record nightShiftDB[0]
+5017	01			.DB 1
+5018	63			.DB 99
+						
+5019	50			.DB 80
+501A	5850			.DW name5		; Record nightShiftDB[1]
+501C	00			.DB 0
+501D	4B			.DB 75
+					
+501E	53616D20..		name0: .DB 'Sam Jones$'
+5028	53617261..		name1: .DB 'Sara Thomas$'
+5034	53616D69..		name2: .DB 'Samira Smith$'
+5041	4D617820..		name3: .DB 'Max Golshani$'
+504E	54686520..		name4: .DB 'The Boss!$'
+5058	5376656E..		name5: .DB 'Sven Svenderson$'
+					
