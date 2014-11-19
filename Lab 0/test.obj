@@ -1,0 +1,5 @@
+3 4 0 8     
+00002B0FFInitmov AL, 00FF20
+000220402add AL, 220
+00043C0D801rcr AL, 120
+00071F4quithlt20

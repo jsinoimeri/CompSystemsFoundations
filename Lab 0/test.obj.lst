@@ -1,0 +1,7 @@
+					Init:
+0000	B0FF					MOV AL, 0FFh	; Initialize AX to zero. AH serves as accumulator and AX will hold product
+0002	0402					ADD AL, 2h		; Initialize CH (Q) = X
+0004	C0D801					RCR AL, 1		; Init BH (M) = Y
+					
+					quit:
+0007	F4			HLT

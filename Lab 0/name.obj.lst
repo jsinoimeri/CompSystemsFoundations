@@ -1,0 +1,20 @@
+				; simple Libra program that displays 'name'
+				
+				start:
+0000	C7C2E904	        mov     DX, 04E9h	; load the display port I/O address into register DX (16 bits wide)
+0004	B04A	        mov     AL, 'J'		; load the ASCII value of the character 'J' into register AL (8 bits wide)
+0006	EE	        out     DX, al		; send the ASCII character in AL out to the display at the port number in DX
+						
+0007	B065	        mov     AL, 'e'		; load the ASCII value of the character 'e' into register AL (8 bits wide)
+0009	EE	        out     DX, al		; send the ASCII character in AL out to the display at the port number in DX
+				
+000A	B074		mov 	AL, 't' 	; load the ASCII value of the character 't' into register AL (8 bits wide)
+000C	EE		out	DX, al 		; send the ASCII character in AL out to the display at the port number in DX
+				
+000D	B06F		mov     AL, 'o'		; load the ASCII value of the character 'o' into register AL (8 bits wide)
+000F	EE	        out     DX, al		; send the ASCII character in AL out to the display at the port number in DX
+				
+0010	B06E		mov 	AL, 'n' 	; load the ASCII value of the character 'n' into register AL (8 bits wide)
+0012	EE		out	DX, al 		; send the ASCII character in AL out to the display at the port number in DX
+				
+0013	F4	        hlt					;  STOP the Libra CPU!
