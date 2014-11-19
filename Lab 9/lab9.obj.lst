@@ -1,0 +1,232 @@
+					; Program to accept a signed decimal number in the format +/-xxxx
+					; Calculate the 8-bit "quarter precision" IEEE-754 encoding and print it to screen.
+					; 
+					
+					; Format -/+xxxx in decimal, entered as ASCII.
+					; 1) Get sign
+					; 2) Get number
+					; 3) Normalize number to get exponent
+					; 3) Compute bias-** representation of exponent
+					; 4) Create final IEEE-754 representation
+					
+					; Constant definitions
+					DISPLAY	.EQU 04E9h	; address of Libra display
+					
+					; Global variables
+					.ORG 0000
+0000	00		SIGN:	.DB	0		; Sign of entered number (0=positive, 1=negative)
+0001	00		SUM:	.DB	0		; Unsigned  binary representation of entered number
+0002	00		EXP:	.DB	0		; Excess/bias representation of exponent (only uses lower 3 bits)
+0003	00		FP:		.DB	0		; 8-bit quarter-precision IEEE-754 representation of number
+					
+					.ORG 1000h
+					;---------------------------
+					;Insert Sub-routines getChar, printStr, and newLine from Lab 8 here
+					;---------------------------
+					printStr:
+										; Save registers modified by this subroutine
+1000	50							PUSH AX								; Push AX into Stack
+1001	56							PUSH SI								; Push SI into Stack
+1002	52							PUSH DX								; Push DX into Stack
+					
+1003	BAE904							MOV DX, DISPLAY				; Copy value of DISPLAY to DX
+										
+										LoopPS:
+1006	8A04											MOV AL, [SI]	; Load the next char to be printed - USING INPUT PARAMETER SI
+1008	3C24											CMP AL, '$'		; Compare the char to '$'
+100A	7405											JE quitPS			; If it is equal, then quit subroutine and return to calling code
+														
+100C	EE											OUT DX,AL			; If it is not equal to '$', then print it
+100D	46											INC SI				; Point to the next char to be printed
+100E	E9F5FF											jmp LoopPS		; Jump back to the top of the loop
+										quitPS:
+														; Restore registers
+1011	5A											POP DX				; POP DX from Stack
+1012	5E											POP SI				; POP SI from Stack
+1013	58											POP AX				; POP AX from Stack
+					
+1014	C3							RET
+						
+						
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh								; ASCII value for Carriage return
+					s_LF .EQU 0Ah								; ASCII value for NewLine
+					
+					newLine:
+										; Save registers modified by this subroutine
+1015	50							PUSH AX						; Push AX into Stack
+1016	52							PUSH DX						; Push DX into Stack
+										
+1017	BAE904							MOV DX, DISPLAY		; Initialize the output port number in DX
+101A	B00A							MOV AL, s_LF			; Load line feed (LF) into AL
+101C	EE							out DX,AL					; print the char
+101D	B00D							MOV AL, s_CR			; Load carriage return (CR) into AL
+101F	EE							out DX,AL					; print the char
+										
+										; Restore registers
+1020	5A							POP DX						; POP DX from Stack
+1021	58							POP AX						; POP AX from Stack
+										
+1022	C3							RET	
+						
+						
+						;;;;;;;;;;;;;;;;;
+					; getChar: waits for a keypress and returns pressed key in AL
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: ASCII Value of key pressed by user
+					
+					; Constants used by this subroutine
+					KBSTATUS .EQU 64h												; port number of keyboard STATUS reg
+					KBBUFFER .EQU 60h												; port number of keyboard BUFFER reg
+					
+					getChar:
+1023	52						PUSH DX        									; save reg used
+									
+									GCWait:
+1024	BA6400										MOV DX, KBSTATUS				; load addr of keybrd STATUS
+1027	EC										IN AL, DX								; Read contents of keyboard STATUS register
+1028	3C00										CMP AL, 0								; key pressed?
+102A	74F8										JZ GCWait								; no, go back and check again for keypress
+									
+102C	BA6000										MOV DX, KBBUFFER				; load port number of kbrd BUFFER register
+102F	EC										IN AL, DX								; get key into AL from BUFFER
+													
+									GCDone:
+1030	5A										POP DX        					; restore regs
+1031	C3						RET
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; END OF SUBROUTINES FROM lab8.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+					; FIX ME -- Complete entire subroutine. Suggest you create a flow chart first!
+					;;;;;;;;;;;;;;;;;
+					; getSign: waits for user to press '+' or '-'. Ignores other chars. 
+					;          Valid input sign character is echoed to screen.
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: Returns a zero for '+' and one for '-'
+					getSign:
+						
+1032	E8EEFF				CALL getChar
+1035	3C2B				CMP AL, '+'
+1037	7409				JE plus_sign
+							
+1039	3C2D				CMP AL, '-'
+103B	75F5				JNE getSign
+						
+						neg_sign:
+103D	B401					MOV AH, 1
+103F	E90200					JMP print_sign
+						
+						plus_sign:
+1042	B400					MOV AH, 0
+						
+						print_sign:
+1044	BAE904					MOV DX, DISPLAY
+1047	EE					OUT DX, AL
+								
+1048	88E0					MOV AL, AH
+									
+					
+104A	C3			RET
+						
+					
+					;;;;;;;;;;;;;;;;;
+					; getDigit: waits for user to press 0-9 digit. Ignores other chars except RETURN
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: Returns binary value of digit in AL. Returns 99 if user presses ENTER
+					
+					; Constants used by this subroutine
+					ENTERK .EQU 0Ah
+					
+					getDigit:
+104B	E8D5FF			CALL getChar		
+104E	3C0A			CMP AL, ENTERK					; Check for ENTER Key (ENTERK)
+1050	7503			JNE skipGD
+1052	B063			MOV AL, 99 					; if yes, return 99 in AL
+1054	C3			RET
+					skipGD:
+1055	3C30			CMP AL, 30h					; check for '0'
+1057	72F2			JB getDigit					; if below '0', get another char
+1059	3C39			CMP AL, 39h					; check for '9'
+105B	77EE			JA getDigit				; if above '9', get another char
+105D	52			PUSH DX					; Echo digit back to screen (remember to save/restore any used registers)
+105E	BAE904			MOV DX, DISPLAY
+1061	EE			OUT DX, AL
+1062	5A			POP DX
+						
+1063	2C30			SUB AL, 30h			
+						;SHR AL, 1					; Shift ASCII --> binary
+1065	C3			RET
+						
+					
+					;;;;;;;;;;;;;;;;;
+					; getNumber: Accepts a series of decimal digits and builds a binary number using shift-add
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: Returns binary value of number in AL. 
+					
+					; Constants used by this subroutine
+					DONE .EQU 99
+					
+					getNumber:				; FIX ME -- complete entire subroutine
+1066	51			PUSH CX				; Save CX register
+1067	B500			MOV CH, 0			; Use CH for running sum
+1069	B10A			MOV CL, 10			; Use CL for multiplier=10
+					loopGN:
+106B	E8DDFF			CALL getDigit					; get a digit
+106E	3C63			CMP AL, DONE					; Check if user pressed ENTER
+1070	740D			JE doneGN					; If so, we are done this subroutine
+1072	50			PUSH AX					; Save entered character onto stack
+1073	88E8			MOV AL, CH					; Copy running sum into AL
+1075	F6E1			MUL CL					; Compute AX=sum*10 (then ignore AH)
+1077	88C5			MOV CH, AL					; Move running sum back into CH
+1079	58			POP AX					; Restore saved character
+107A	00C5			ADD CH, AL					; Add entered digit to shifted running sum
+107C	E9ECFF			JMP loopGN
+					doneGN:
+107F	88E8			MOV AL, CH					; Put final sum into AL
+1081	59			POP CX				; Restore CX
+1082	C3			RET
+						
+					
+1083	456E7465..		Message1: .DB	'Enter a number BW -128 to +127.$'		; FIX ME -- Message to be printed on screen
+					
+							
+					;;;;;;;;;;;;;
+					; Main function: Asks the user to enter a signed number between -MAX to +MAX 
+					; 				Computes quarter-precision 8-bit IEEE-754 representation
+					;
+					;				Uses printStr, newline, and getChar subroutines.
+					main:
+10A3	BE8310			MOV SI, Message1
+10A6	E857FF			CALL 	printStr					;Print prompt
+10A9	E869FF			CALL newLine						;
+10AC	B000			MOV AL, 0
+10AE	88060100			MOV [SUM], AL					;
+					
+					part1:			
+10B2	E87DFF			CALL getSign						;call getSign to get +/- sign from keyboard
+10B5	88060000			MOV BYTE PTR [SIGN], AL			;Save sign to global variable SIGN
+10B9	E8AAFF			CALL getNumber						;call getNumber to get the unsigned number
+10BC	88060100			MOV [SUM], AL						;Save number to global variable SUM
+					
+					;Quit
+10C0	F4			HLT
+						
+						
+					

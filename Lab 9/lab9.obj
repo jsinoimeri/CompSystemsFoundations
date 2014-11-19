@@ -1,0 +1,92 @@
+3 91 4259 197   
+0000100SIGN020
+0001100SUM020
+0002100EXP020
+0003100FP020
+1000150printStrpush AX20
+1001156push SI20
+1002152push DX20
+10033BAE904mov DX, 04E9H20
+100628A04LoopPSmov AL, [SI]20
+100823C24cmp AL, '$'20
+100A27405je quitPS20
+100C1EEout DX, AL20
+100D146inc SI20
+100E3E9F5FFjmp LoopPS20
+101115AquitPSpop DX20
+101215Epop SI20
+1013158pop AX20
+10141C3ret20
+1015150newLinepush AX20
+1016152push DX20
+10173BAE904mov DX, 04E9H20
+101A2B00Amov AL, 0AH20
+101C1EEout DX, AL20
+101D2B00Dmov AL, 0DH20
+101F1EEout DX, AL20
+102015Apop DX20
+1021158pop AX20
+10221C3ret20
+1023152getCharpush DX20
+10243BA6400GCWaitmov DX, 64H20
+10271ECin AL, DX20
+102823C00cmp AL, 020
+102A274F8jz GCWait20
+102C3BA6000mov DX, 60H20
+102F1ECin AL, DX20
+103015AGCDonepop DX20
+10311C3ret20
+10323E8EEFFgetSigncall getChar20
+103523C2Bcmp AL, '+'20
+103727409je plus_sign20
+103923C2Dcmp AL, '-'20
+103B275F5jne getSign20
+103D2B401neg_signmov AH, 120
+103F3E90200jmp print_sign20
+10422B400plus_signmov AH, 020
+10443BAE904print_signmov DX, 04E9H20
+10471EEout DX, AL20
+1048288E0mov AL, AH20
+104A1C3ret20
+104B3E8D5FFgetDigitcall getChar20
+104E23C0Acmp AL, 0AH20
+105027503jne skipGD20
+10522B063mov AL, 9920
+10541C3ret20
+105523C30skipGDcmp AL, 30H20
+1057272F2jb getDigit20
+105923C39cmp AL, 39H20
+105B277EEja getDigit20
+105D152push DX20
+105E3BAE904mov DX, 04E9H20
+10611EEout DX, AL20
+106215Apop DX20
+106322C30sub AL, 30H20
+10651C3ret20
+1066151getNumberpush CX20
+10672B500mov CH, 020
+10692B10Amov CL, 1020
+106B3E8DDFFloopGNcall getDigit20
+106E23C63cmp AL, 9920
+10702740Dje doneGN20
+1072150push AX20
+1073288E8mov AL, CH20
+10752F6E1mul CL20
+1077288C5mov CH, AL20
+1079158pop AX20
+107A200C5add CH, AL20
+107C3E9ECFFjmp loopGN20
+107F288E8doneGNmov AL, CH20
+1081159pop CX20
+10821C3ret20
+108332456E7465722061206E756D626572204257202D31323820746F202B3132372E24Message1'Enter a number BW -128 to +127.$'20
+10A33BE8310mainmov SI, Message120
+10A63E857FFcall printStr20
+10A93E869FFcall newLine20
+10AC2B000mov AL, 020
+10AE488060100mov [SUM], AL20
+10B23E87DFFpart1call getSign20
+10B5488060000mov [SIGN], AL20
+10B93E8AAFFcall getNumber20
+10BC488060100mov [SUM], AL20
+10C01F4hlt20

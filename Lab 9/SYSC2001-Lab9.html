@@ -1,0 +1,45 @@
+<html>
+<h1>SYSC 2001 - LAB 9</h1>
+<head>
+<title> SYSC 2001 - Lab 9: IEEE-754 Floating Point Representation - Part 1</title>
+<body>
+<hr><h3>Part 0: IEEE-754</h3>
+
+<p>Review the <b>Floating Point slides covering IEEE-754 representation</b>. Over the next two labs, you will develop a program to accept a signed decimal <u>whole</u> number, compute the IEEE-754 8-bit representation, and print it to screen. Assume that the IEEE-754 8-bit representation <i>(we'll call it "quarter-precision")</i> uses 1 bit for the sign bit, 3 bits for the exponent, and 4 bits for the mantissa. We will ignore special cases such as zero, NaN, and infinity.
+<p><b>What bias/offset would you use for a 3-bit exponent? What is the largest/smallest exponent you can express with this representation?</b>
+<p><b>What is the largest mantissa (including the hidden bit)? What is the smallest mantissa? Give your answers in both binary and decimal.
+<p><b>What is the largest positive number that can be represented using "quarter-precision"? </b><i>(This will give you <code>MAX</code> below)</i>
+<p><b>Compute the 8-bit "quarter-precision" representation for the following decimal values:<ol><li>+30<li>-23<li>-12</ol></b>
+		
+<hr><h3>Part 1: Entering a multi-digit number</h3>
+<p><strong>Complete the code given in <a href="lab9.asm">lab9.asm</a></strong> to:
+<ol>
+	<li>Prompt the user to type in a multidigit decimal number between {-<code>MAX</code>,+<code>MAX</code>}, then press <code>ENTER</code> <i>(use <code>printStr()</code> and <code>newLine()</code> from lab8)</i> . <u>MAX should correspond to largest representable number found above.</u>
+	<li>Read the sign of the number (- or +) using a new subroutine called <code>getSign()</code> which returns a zero (positive) or a one (negative) <i>(should call <code>getChar()</code> from lab8 from within <code>getSign()</code>)</i>. Ignore any invalid characters entered (i.e. just keep checking for typed characters until you receive a valid one). You should echo the entered character to the screen once a valid sign is entered. I suggest you create a quick flowchart to sort out the logic prior to starting to code this subroutine.
+	<li>Save the value of the sign into a global variable called <code>SIGN</code>
+	<li>Initialize a variable <code>SUM</code> to zero. This will hold your 8-bit unsigned value.
+	<li>Create a new subroutine called <code>getNumber()</code> which will read decimal digits from the keyboard and build an unsigned binary number. Read the digits one at a time using a new subroutine called <code>getDigit()</code> which returns the digit in an 8-bit register<i>(you should call <code>getChar()</code> from lab8 inside <code>getDigit()</code>)</i>. If the user enters an invalid character, ignore it and look for another keystroke. If the user enters the <code>ENTER</code> key, return decimal <code>99</code>. Also, echo the entered number to the screen.
+	<li>If the character is <code>ENTER</code>, quit the subroutine.
+	<li>Otherwise, multiply <code>SUM</code> by 10, then add the new digit to <code>SUM</code>.
+</ol>
+
+<p><strong>Stop and demo your working program to at TA. You should be prepared to demonstrate the following test cases: 
+<ol>
+	<li>"+30" (<code>SIGN=0, SUM=00011110</code>)
+	<li>"-23" (<code>SIGN=1, SUM=00010111</code>)
+	<li>"b-1a2" (<code>SIGN=1, SUM=00001100</code>) <i>"b" and "a" should be ignored</i>
+</ol></strong>
+
+
+					
+<hr><H2>Hints</H2>
+<ul>
+	<li><i>To find out what ASCII code is entered when the <code>ENTER</code> key is pressed, write a short program to accept one character, read that character into <code>AL</code>, then quit. You can set a breakpoint in your code and examine the ASCII code in <code>AL</code> to figure out what value is read when the user presses <code>ENTER</code>)</i>
+	<li><i>Recall that <code>printStr()</code> requires the string to be terminated by the <code>'$'</code> character...
+	<li><i>You may want to review the <a href="http://www.c-jump.com/CIS77/ASM/Assembly/lecture.html#A77_0370_shift_instructions">various forms of shift/rotate</a> from lab3.</i>
+
+<hr><H2>BONUS</H2>
+<p>Next week you will have to normalize <code>SUM</code>, compute the exponent with bias (<code>EXP</code>), and write your complete "quarter precision" value to the screen. Feel free to work ahead if you have time!
+
+</body>
+</html>
