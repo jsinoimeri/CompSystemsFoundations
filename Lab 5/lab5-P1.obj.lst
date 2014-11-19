@@ -1,0 +1,200 @@
+					; Lab5 - Subroutine to print a record from an array of structures
+					
+					; Constant definitions
+					Display	.EQU 04E9h	; address of Libra display
+					
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;  START OF SUBROUTINES to COPY to lab5-P2.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+					;;;;;;;;;;;;;;;;;
+					; printStr: Subroutine to print a '$'-terminated string
+					; Input parameters:
+					; 	SI: Address of start of string to be printed
+					; Output parameters:
+					;	None.
+					printStr:
+						; Save registers modified by this subroutine
+0000	50			PUSH AX			; Push AX into Stack
+0001	56			PUSH SI			; Push SI into Stack
+0002	52			PUSH DX			; Push DX into Stack
+					
+0003	BAE904			MOV DX, Display
+					LoopPS:
+0006	8A04			MOV AL, [SI]	; Load the next char to be printed - USING INPUT PARAMETER SI
+0008	3C24			CMP AL, '$'		; Compare the char to '$'
+000A	7405			JE quitPS		; If it is equal, then quit subroutine and return to calling code
+000C	EE			OUT DX,AL		; If it is not equal to '$', then print it
+000D	46			INC SI			; Point to the next char to be printed
+000E	E9F5FF			jmp LoopPS		; Jump back to the top of the loop
+					quitPS:
+						; Restore registers
+0011	5A			POP DX			; POP DX from Stack
+0012	5E			POP SI			; POP SI from Stack
+0013	58			POP AX			; POP AX from Stack
+					
+0014	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; printInt: Subroutine to print a 1-byte unsigned (short) integer between 0-255
+					; Input parameters:
+					; 	AL: Unsigned short int to be printed
+					; Output parameters:
+					;	None.
+					printInt:
+						; Save registers modified by this subroutine
+0015	50			PUSH AX			; Push AX into Stack
+0016	51			PUSH CX			; Push CX into Stack
+0017	52			PUSH DX			; Push DX into Stack
+						
+0018	BAE904			MOV DX, Display
+001B	B10A			MOV CL, 10		; Will be dividing by 10...
+						
+					LoopPI:
+001D	3C0A			CMP AL, 10		; Compare the number to 10
+001F	7C0C			JL printLast	; If it is less than 10, then print this digit
+						; If it is greater than 10, divide by 10
+0021	B400			MOV AH, 0		; Clear AH
+0023	F6F1			DIV CL			; Divide number by 10
+0025	E80C00			CALL printDigit ; Print the quotient in AL
+0028	88E0			MOV AL, AH		; Move remainder into AL to be printed
+002A	E9F0FF			jmp LoopPI		; Jump back to the top of the loop
+					printLast:
+002D	E80400			CALL printDigit
+						
+						; Restore registers
+0030	5A			POP DX			; POP DX from Stack
+0031	59			POP CX			; POP CX from Stack
+0032	58			POP AX			; POP AX from Stack
+						
+0033	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; printDigit: Subroutine to print a single decimal digit
+					; Input parameters:
+					; 	AL: Unsigned decimal digit (between 0-9) to be printed
+					; Output parameters:
+					;	None.
+					printDigit:
+						; Save registers modified by this subroutine
+0034	50			PUSH AX			; Push AX into Stack
+0035	52			PUSH DX			; Push DX into Stack
+						
+0036	BAE904			MOV DX, Display
+0039	0430			ADD AL, '0'		; Convert number to ASCII code
+003B	EE			OUT DX,AL		; Print it
+						
+						; Restore registers
+003C	5A			POP DX			; POP DX from Stack
+003D	58			POP AX			; POP AX from Stack
+						
+003E	C3			RET
+						
+							
+					;;;;;;;;;;;;;;;;;
+					; printSalary: Subroutine to print employee salary
+					; Input parameters:
+					; 	AL: Unsigned short int (0-99) representing salary in 1000's of $
+					; Output parameters:
+					;	None.
+					
+					; Constant strings for this subroutine:
+003F	2C30303024		s_thousands: .DB ',000$'
+0044	24		s_dollars: .DB '$'
+					
+					printSalary:
+						; Save registers modified by this subroutine
+0045	50			PUSH AX			; Push AX into Stack
+0046	56			PUSH SI			; Push SI into Stack
+0047	52			PUSH DX			; Push DX into Stack
+						
+0048	BAE904			MOV DX, Display
+						
+004B	88C4			MOV AH,AL		; Keep a copy of the salary in AH (need AL for printing...)
+004D	8A064400			MOV AL, [s_dollars]	; Print '$' preceeding number
+0051	EE			OUT DX,AL		; Print it
+0052	88E0			MOV AL,AH		; Move salary back into AL
+0054	E8BEFF			CALL printInt		; Print the salary (0-255)
+0057	BE3F00			MOV SI, s_thousands	; Move the starting address of s_thousands string into BX
+005A	E8A3FF			CALL printStr 		; Print ',000'
+						
+						; Restore registers
+005D	5A			POP DX			; POP DX from Stack
+005E	5E			POP SI			; POP SI from Stack
+005F	58			POP AX			; POP AX from Stack
+						
+0060	C3			RET
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh		; ASCII value for Carriage return
+					s_LF .EQU 0Ah		; ASCII value for NewLine
+					
+					newLine:
+						; Save registers modified by this subroutine
+0061	50			PUSH AX			; Push AX into Stack
+0062	52			PUSH DX			; Push DX into Stack
+						
+0063	BAE904			MOV DX, Display		; Initialize the output port number in DX
+0066	B00A			MOV AL, s_LF		; Load line feed (LF) into AL
+0068	EE			out DX,AL		; print the char
+0069	B00D			MOV AL, s_CR		; Load carriage return (CR) into AL
+006B	EE			out DX,AL		; print the char
+						
+						; Restore registers
+006C	5A			POP DX			; POP DX from Stack
+006D	58			POP AX			; POP AX from Stack
+						
+006E	C3			RET
+						
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; END OF SUBROUTINES FOR lab5-P2.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+							
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; Test data
+					;
+					
+					.ORG 00A0h
+					
+00A0	48656C6C..		str1: .DB 'Hello World!$'		; Should print as 'Hello World!'
+00AD	56		num1: .DB 86				; Should print as decimal 86
+00AE	22		sal1: .DB 34 				; Should print as '$34,000'
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+					; main: Main function to test all subroutines
+					.ORG 00B0h
+					
+					main:
+					
+						; Print a string. Use str1
+00B0	BEA000			MOV SI, str1						; Load address of str1 into SI
+00B3	E84AFF			CALL printStr
+00B6	E8A8FF			CALL newLine
+						
+						; Print a short unsigned int (0-99). Use num1
+00B9	8A06AD00			MOV AL, [num1]	 					; Load the value of num1 into AX
+00BD	E855FF			CALL printInt
+00C0	E89EFF			CALL newLine
+						
+						; Print a salary. Use sal1
+00C3	8B06AE00			MOV AX, [sal1]	 					; Load the value of sal1 into AX
+00C7	E87BFF			CALL printSalary
+00CA	E894FF			CALL newLine
+						
+						;Quit
+00CD	F4			HLT
+						
+						
+					
