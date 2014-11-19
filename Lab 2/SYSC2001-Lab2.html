@@ -1,0 +1,136 @@
+<html>
+
+<head>
+ <title>SYSC2001 - Lab 1 - Part b</title>
+</head>
+
+<body>
+
+<h1>SYSC 2001 LAB1b</h1>
+
+<p>Last week we learned how to print a string of ASCII characters in Libra.
+Recall that there is a virtual display screen located at port number (I/O address) 04E9h
+(hexadecimal).  Note that only ASCII codes can be sent to the display.  This
+means that if you want to print numbers they must be converted to ASCII strings
+first. Since the <b><code>out</code></b> statement can only send 1 ASCII character to the display we used a loop
+to print our character strings.</p>
+
+<p>This week, we will print signed integers to the screen. Recall that the Libra 
+display can only print ASCII <u>characters</u>, so you will have to convert all numeric digits to their ASCII equivalent 
+before they can be displayed on the screen.
+
+Follow the instructions below. <u>Write down your answers to any questions that appear <b>in bold</b></u>.
+
+<h2>Part 0: Signed vs. Unsigned Conditional Jumps</h2>
+<hr>
+<p>You may have noticed in the <a href="../Virgo/p86reference.pdf">p86 Reference Sheet</a> that there are two 
+"versions" of each type of conditional jump. For example, we have both <code>JA</code> (Jump if Above) and <code>JG</code> (Jump if Greater Than). 
+In this example, the first type of jump (<code>JA</code>) is an <u>unsigned</u> conditional jump, while 
+the second one (<code>JG</code>) is an <u>signed</u> conditional jump. What does this mean?
+
+<p>Essentially, unsigned conditional jumps assume that you are using your registers to hold unsigned integers, 
+while signed conditional jumps assume that you are working with signed (i.e. 2's comp) integers. Signed 
+conditional jumps will tend to check the current value of the <code>Sign and Overfow Flags</code> <i>(recall that the <code>CMP</code> instruction
+sets the condition flags <code>S,Z,C, and O</code>)</i>, while the unsigned jumps will ignore the <code>Sign and Overflow Flags</code>.
+
+<p>For example, if you are checking to see if a number in a register is greater than 0, and the register holds  
+the value: <code>11111111</code> (or <code>FFh</code>), then this bit pattern can either be interpreted as
+<code>255</code> if you are using unsigned values, or <code>-1</code> if you are using signed (2's comp) values. In the unsigned case,
+the value in the register (<code>FFh=+255</code>) is ABOVE zero, and in the signed case, the value in the register (<code>FFh=-1</code>) is LESS THAN zero.
+
+<p>The processor does not know which interpretation to use. Only <u>you</u>, the programmer, know which interpretation is correct. Therefore 
+<u>you</u> need to decide whether to use signed or unsigned conditional jumps in your code.
+
+<P> Here is a quick example to illustrate:
+<blockquote>
+<pre>
+MOV AL, FFh		; could be +255 or -1, only YOU know which is correct
+CMP AL, 0		; compare the value in AL to zero
+JG signed		; If you are using SIGNED values, use a SIGNED JUMP. <b>Would this jump be taken?</b>
+JA unsigned		; If you are using UNSIGNED values, use an UNSIGNED JUMP. <b>Would this jump be taken?</b>
+</pre>
+</blockquote>
+
+<p>Here is a table summarizing the signed and unsigned jumps:
+<blockquote>
+<table border="rows">
+	<TR align="center"><TH>UNSIGNED<TH>SIGNED</TR>
+	<TR align="center"><TD><code>JA<TD><code>JG</TR> 
+	<TR align="center"><TD><code>JAE<TD><code>JGE</TR>
+	<TR align="center"><TD><code>JB<TD><code>JL</TR>
+	<TR align="center"><TD><code>JBE<TD><code>JLE</TR>
+</table>
+</blockquote>
+
+<h2>Part I: Printing small signed integers</h2>
+
+<hr size=1 width="100%" align=center>
+ 
+<ol>
+	<li><b>What are the ASCII values for the following numbers:</b>
+		<ol>
+			<li>0
+			<li>5
+			<li>9
+		</ol>
+		<b>What (HEX) offset is required to convert a number to its ASCII equivalent?</b> (i.e. add how much to the raw number to get its ASCII value?)
+	<li><b>What are "carriage return" (CR) and "line feed" (LF) characters used for? <i>(Hint: think of an old mechanical typewriter...)</i> What are the ASCII values for these two characters?</b> 
+	<li>Download the source file <b><code>prtNum.asm</code></b> and save-as to your "Lab2" directory on your M-drive. 
+	This program <u>should</u> print a series of signed numbers to the screen (where each number lies in the range +9 to -9), starting at a predefined memory location. When it reads a zero from memory, it should quit. 
+	Open prtNum.asm using Notepad++. 
+	Read through all the code and comments carefully to make sure you understand <u>every line</u> of the code.
+	<li>You will notice that the code is <u>WRONG</u> in many locations, and that missing information is indicated with a <b>'*'</b>. For each location that has a comment <code><strong>***FIX ME</strong></code>, 
+	you need to figure out how to fix that line (i.e. what assembly code is needed on that line). 
+	This includes entering your own name and student number at the top of the file.
+	The comments near the line will help you determine what the line should be doing.
+	<u><i>Note that you should not need to <u>add</u> any new instructions to the program, just fix the ones given to you.</i></u>
+
+	<li>The program assumes that the numbers to be printed are stored in memory. <b>Where does the program assume that the numbers are located?</b>
+	
+	<li>Your code should now be complete. Try to assemble it and check the listing file for any errors. Do not proceed until your code assembles properly into an OBJ file.
+	<li>Load your code into Libra and run it once. <b>What number is printed to the screen? Why is this printed to the screen?</b>
+	<i> (Hint, examine the contents of memory.</i>
+	<li><b>How many times was the number printed to the display? Why?</b> 
+	<li>Change the contents of memory to only print the number once. <b>Which memory location had to be changed? What did you enter there? Why?</b>
+
+	<li><b>Compute the 2's complement of the following numbers, expressed in HEX.</b> For example, -3 is FDh. If you have not seen this in class yet, you can figure it out by counting backwards, as in: <code>-1=FF, -2=FE, -3=FD,</code> etc.
+	<ol>
+		<li>8
+		<li>3
+		<li>-9
+		<li>-5
+	</ol>
+	<li>Manually enter each of these cases into memory at the appropriate addresses 
+	and run your now complete program to verify that each number prints correctly to the display. Make sure that only these four numbers print 
+	to the display (i.e. that your program stops after printing these four numbers). <i>Recall the difference between the <code>STOP</code> and <code>Reload Program</code> buttons -- you don't have to reset memory each time your run your program...</i>
+</ol>	
+<p><b>Demonstrate your program to the TA. Explain your answers to the questions in <u>bold</u> above. Please write your answers down in Notepad++ or on paper before showing the TA</b>.
+
+
+<H2>Part II: Print larger numbers</H2>
+<hr>
+<p>Create a flow chart that will accept a number between 0 to +19 and print the number one digit at a time. You should first check how many digits need to be printed (how would you do this?), then print the upper digit (if needed), then print the lower digit (how do you isolate the lower digit from the original number?). <b>Show your flowchart to a TA before writing your code below.</b>
+<p>Make a copy of your program from Part I and name it <code>pBigNum.asm</code>. Change the program so that it can print larger numbers, 
+in the range -19 to +19. This change only requires ~5 lines of code. You do <strong><u>NOT need to use the <code>DIV</code> instruction</u></strong>. You will need to use the <code>SUB</code> instructions (among others).
+<p>Demonstrate and <u>explain</u> your code to a TA.
+<p><strong>Remember to add comments to your program to explain any lines you change or add!</strong>
+<p><strong>Use the <u>submit program</u> to submit your final pBigNum.asm file. </strong> (see instructions on how to use the submit program posted on the CULearn page if needed.)
+
+<H2>Hints:</H2><hr>
+<ul>
+	<li>The p86 instruction reference sheet posted on the course CULearn page is useful for completing this lab.
+	<li>Remember to use the 'single-step' feature of Libra to slowly step through your program and make sure it works the way you want it to. This is a very useful <b>debugging</b> tool!
+	<li>Every time you make a change to your code, you must:<ol><li>Save the ASM file in Notepad++<li>Re-assemble the file<li>Re-check the LST file for errors<li>Reload the OBJ file in Libra<li>Rerun your program</ol><p><i>You do not have to close and re-open lasm-gui.exe or libra.exe...</i>
+</ul>
+
+<hr>
+<H2> Bonus:</H2> <i>(only worth 'moral victory' points, not actual bonus points)</i>
+<ul>
+	<li>Change your program so that it works with numbers in the full range of 8-bit signed integers <i>(what is that range again? ;)</i>. You will need to 
+	figure out how to use the DIV instruction for this.
+</ul>
+
+<p><b>Good Luck!</b></p>
+
+</body>
+</html>

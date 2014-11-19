@@ -1,0 +1,27 @@
+3 26 0 54    
+00004C7C35000Mainmov BX, 005020
+00044C7C2E904mov DX, 04E920
+000828A27mainLoopmov AH, [BX]20
+000A380FC00cmp AH, 020
+000D27426je EndPrt20
+000F380FC00cmp AH, 020
+001227F05jg posNum20
+00142B02DnegNummov AL, '-'20
+00161EEout DX, AL20
+00172F6DCneg AH20
+0019380FC0AposNumcmp AH, 1020
+001C27C08jl printPos20
+001E380EC10sub AH, 1020
+00212B001mov AL, 120
+002320430add AL, 3020
+00251EEout DX, AL20
+0026288E0printPosmov AL, AH20
+002820430add AL, 3020
+002A1EEout DX, AL20
+002B2B00Dmov AL, 1320
+002D1EEout DX, AL20
+002E2B00Amov AL, 1020
+00301EEout DX, AL20
+0031143inc BX20
+00323E9D3FFjmp mainLoop20
+00351F4EndPrthlt20
