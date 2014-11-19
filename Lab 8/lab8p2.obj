@@ -1,0 +1,73 @@
+3 72 92 145   
+0000150printStrpush AX20
+0001156push SI20
+0002152push DX20
+00033BAE904mov DX, 04E9H20
+000628A04LoopPSmov AL, [SI]20
+000823C24cmp AL, '$'20
+000A27405je quitPS20
+000C1EEout DX, AL20
+000D146inc SI20
+000E3E9F5FFjmp LoopPS20
+001115AquitPSpop DX20
+001215Epop SI20
+0013158pop AX20
+00141C3ret20
+0015150newLinepush AX20
+0016152push DX20
+00173BAE904mov DX, 04E9H20
+001A2B00Amov AL, 0AH20
+001C1EEout DX, AL20
+001D2B00Dmov AL, 0DH20
+001F1EEout DX, AL20
+002015Apop DX20
+0021158pop AX20
+00221C3ret20
+0023152getCharpush DX20
+00243BA6400GCWaitmov DX, 64H20
+00271ECin AL, DX20
+002823C00cmp AL, 020
+002A274F8jz GCWait20
+002C3BA6000mov DX, 60H20
+002F1ECin AL, DX20
+003015AGCDonepop DX20
+00311C3ret20
+0032150printRevStrpush AX20
+0033156push SI20
+0034152push DX20
+00353BAE904mov DX, 04E9H20
+00383BE0000mov SI, 0000H20
+003B481EE0200LoopPS2sub SI, 220
+003F28A04mov AL, [SI]20
+004123C24cmp AL, '$'20
+004327404je quitPS220
+00451EEout DX, AL20
+00463E9F2FFjmp LoopPS220
+004915AquitPS2pop DX20
+004A15Epop SI20
+004B158pop AX20
+004C1C3ret20
+004D15456E746572206120737472696E6724Message1'Enter a string$'20
+005C3BE4D00mainmov SI, Message120
+005F3E89EFFcall printStr20
+00623E8B0FFcall newLine20
+00653B90000mov CX, 020
+00683E8B8FFgsAgaincall getChar20
+006B23C0Acmp AL, 0AH20
+006D27405je gsPrint20
+006F141inc CX20
+0070150push AX20
+00713E9F4FFjmp gsAgain20
+0074481F90000gsPrintcmp CX, 020
+007827416je gsDone20
+007A3B82400mov AX, '$'20
+007D150push AX20
+007E141inc CX20
+007F3E8B0FFcall printRevStr20
+00823E890FFcall newLine20
+0085158gsClearpop AX20
+0086149dec CX20
+0087481F90000cmp CX, 020
+008B275F8jne gsClear20
+008D3E9CCFFgsJumpMainjmp main20
+00901F4gsDonehlt20

@@ -1,0 +1,189 @@
+					; Lab8 Part II - Program to prompt the user to enter a string
+					;				Gets characters from the keyboard one at a time
+					; 				Checks if the user presses 'ENTER'
+					;				Once 'ENTER' is pressed, echos the string back from the stack in CORRECT order
+					
+					; Constant definitions
+					DISPLAY	.EQU 04E9h							; address of Libra display
+					
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;Insert Sub-routines getChar, printStr, and newLine from Lab 7 here
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					;;;;;;;;;;;;;;;;;
+					; printStr: Subroutine to print a '$'-terminated string
+					; Input parameters:
+					; 	SI: Address of start of string to be printed
+					; Output parameters:
+					;	None.
+					printStr:
+										; Save registers modified by this subroutine
+0000	50							PUSH AX								; Push AX into Stack
+0001	56							PUSH SI								; Push SI into Stack
+0002	52							PUSH DX								; Push DX into Stack
+					
+0003	BAE904							MOV DX, DISPLAY				; Copy value of DISPLAY to DX
+										
+										LoopPS:
+0006	8A04											MOV AL, [SI]	; Load the next char to be printed - USING INPUT PARAMETER SI
+0008	3C24											CMP AL, '$'		; Compare the char to '$'
+000A	7405											JE quitPS			; If it is equal, then quit subroutine and return to calling code
+														
+000C	EE											OUT DX,AL			; If it is not equal to '$', then print it
+000D	46											INC SI				; Point to the next char to be printed
+000E	E9F5FF											jmp LoopPS		; Jump back to the top of the loop
+										quitPS:
+														; Restore registers
+0011	5A											POP DX				; POP DX from Stack
+0012	5E											POP SI				; POP SI from Stack
+0013	58											POP AX				; POP AX from Stack
+					
+0014	C3							RET
+						
+						
+					;;;;;;;;;;;;;;;;;
+					; newLine: Subroutine to print a newline and a linefeed character
+					; Input parameters:
+					; 	None.
+					; Output parameters:
+					;	None.
+					
+					; Constants for this subroutine:
+					s_CR .EQU 0Dh								; ASCII value for Carriage return
+					s_LF .EQU 0Ah								; ASCII value for NewLine
+					
+					newLine:
+										; Save registers modified by this subroutine
+0015	50							PUSH AX						; Push AX into Stack
+0016	52							PUSH DX						; Push DX into Stack
+										
+0017	BAE904							MOV DX, DISPLAY		; Initialize the output port number in DX
+001A	B00A							MOV AL, s_LF			; Load line feed (LF) into AL
+001C	EE							out DX,AL					; print the char
+001D	B00D							MOV AL, s_CR			; Load carriage return (CR) into AL
+001F	EE							out DX,AL					; print the char
+										
+										; Restore registers
+0020	5A							POP DX						; POP DX from Stack
+0021	58							POP AX						; POP AX from Stack
+										
+0022	C3							RET	
+						
+						
+						;;;;;;;;;;;;;;;;;
+					; getChar: waits for a keypress and returns pressed key in AL
+					; Input parameters:
+					; 	none.
+					; Output parameters:
+					;	AL: ASCII Value of key pressed by user
+					
+					; Constants used by this subroutine
+					KBSTATUS .EQU 64h												; port number of keyboard STATUS reg
+					KBBUFFER .EQU 60h												; port number of keyboard BUFFER reg
+					
+					getChar:
+0023	52						PUSH DX        									; save reg used
+									
+									GCWait:
+0024	BA6400										MOV DX, KBSTATUS				; load addr of keybrd STATUS
+0027	EC										IN AL, DX								; Read contents of keyboard STATUS register
+0028	3C00										CMP AL, 0								; key pressed?
+002A	74F8										JZ GCWait								; no, go back and check again for keypress
+									
+002C	BA6000										MOV DX, KBBUFFER				; load port number of kbrd BUFFER register
+002F	EC										IN AL, DX								; get key into AL from BUFFER
+													
+									GCDone:
+0030	5A										POP DX        					; restore regs
+0031	C3						RET
+					
+					
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					; END OF SUBROUTINES FROM lab7.asm
+					;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+					
+					
+					;;;;;;;;;;;;;;;;;
+					; printRevStr: Subroutine to print a '$'-terminated string
+					;			Each character in the string is stored
+					; 			as a 2-byte value. Only the lower byte is meaningful
+					; Input parameters:
+					; 	SI: Address of start of string to be printed
+					; Output parameters:
+					;	None.
+					printRevStr:
+												; Save registers modified by this subroutine
+0032	50									PUSH AX									; Push AX into Stack
+0033	56									PUSH SI									; Push SI into Stack
+0034	52									PUSH DX									; Push DX into Stack
+											
+0035	BAE904									MOV DX, DISPLAY					; Copy value of DISPLAY to DX
+							
+0038	BE0000									MOV SI, 0000h						; Copy the value 0000h into SI
+												
+												LoopPS2:
+003B	81EE0200														SUB SI, 2			; Subtract 2 from SI to get next character entered
+003F	8A04														MOV AL, [SI]	; Load the next char to be printed - USING INPUT PARAMETER SI
+0041	3C24														CMP AL, '$'		; Compare the char to '$'
+0043	7404														JE quitPS2		; If it is equal, then quit subroutine and return to calling code
+																	
+0045	EE														OUT DX,AL			; If it is not equal to '$', then print it
+0046	E9F2FF														jmp LoopPS2		; Jump back to the top of the loop
+												
+												quitPS2:
+																	; Restore registers
+0049	5A														POP DX				; POP DX from Stack
+004A	5E														POP SI				; POP SI from Stack
+004B	58														POP AX				; POP AX from Stack
+									
+004C	C3									RET
+					
+						
+004D	456E7465..		Message1: .DB	'Enter a string$'				; Prompt to be printed on screen
+					
+							
+					;;;;;;;;;;;;;
+					; Main function: Asks the user to enter a string 
+					; 				Echos the string to screen in reverse order.
+					;				Uses printStr, newline, and getChar subroutines.
+					main:
+005C	BE4D00					mov SI, Message1								; Prompt the user
+005F	E89EFF					call printStr										; Print Message1
+0062	E8B0FF					call newLine										;	Print new line
+								
+0065	B90000					MOV CX, 0												; Initialize CX to 0 for counting number of characters
+								
+								gsAgain:
+0068	E8B8FF										CALL 	getChar					; Get a character
+006B	3C0A										CMP AL, s_LF 					; Check if AL is the ascii value of line feed (enter)
+006D	7405										JE gsPrint						; if it is then proceed to gsPrint
+													
+006F	41										INC CX								; Increment the counter by 1
+0070	50										PUSH AX								; Push the character as a 16-bit value
+0071	E9F4FF										JMP gsAgain						; Get the next char
+								
+								gsPrint:
+0074	81F90000										CMP CX, 0							; compare CX to 0
+0078	7416										JE gsDone							; if equal then go to gsDone
+													
+007A	B82400										MOV AX, '$'						; Copy the ascii value of $ to AX
+007D	50										PUSH AX								; Push AX onto stack
+													
+007E	41										INC CX								; Increment the counter by 1
+					
+007F	E8B0FF										CALL printRevStr			; Print the string in correct order
+0082	E890FF										CALL 	newLine					; Print new line
+													
+								gsClear:				
+0085	58												POP AX						; POP the contents of stack into AX
+0086	49												DEC CX						; Decrement CX
+																		
+0087	81F90000												CMP CX, 0					; Compare CX with 0
+008B	75F8												JNE gsClear				; Loop back to clear if not equal
+								
+								gsJumpMain:														
+008D	E9CCFF											JMP main						; Loop back to main
+								
+								gsDone:
+0090	F4									HLT											;Quit
+												

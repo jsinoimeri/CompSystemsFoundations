@@ -1,0 +1,38 @@
+<html>
+<h1>SYSC 2001 - LAB 8</h1>
+<head>
+<title> SYSC 2001 - Lab 8: Using stack as a buffer </title>
+<body>
+<h3>Why use the stack as a buffer?</h3>
+
+<p>So far we've used the stack for saving/restoring registers, for passing parameters to subroutines, and for storing return addresses prior to <code>CALL</code>ing subroutines. But the stack is useful for storing other temporary values during the execution of your code. For example, in this lab we need a place to store a string of unknown length. Rather than defining a special region of memory in which to store our string, we can store it on the stack!
+
+		
+<h3>Part 1:</h3>
+<p><strong>Complete the code given in <code>lab8p1.asm</code></strong> to:
+<ol>
+	<li><code>PUSH</code> a '$' and a 00h onto the stack. <strong>WHY?</strong>
+	<li>Prompt the user to type in a string, then press <code>ENTER</code> <i>(use <code>printStr()</code> and <code>newLine()</code> from lab7)</i> 
+	<li>Read characters from the keyboard, one at a time <i>(use <code>getChar()</code> from lab7)</i>
+	<li>If the character does not correspond to the <code>ENTER</code> key, then save this character onto the stack. <strong>Note that since we must save 16-bit values onto the stack, you need to PUSH all of <code>AX</code>, not just the character in <code>AL</code>. </strong>
+	<li>If the character corresponds to the <code>ENTER</code> key, then stop entering characters. <i>(see hint below)</i>
+	<li>Once the user presses the <code>ENTER</code> key, you should print the string backwards to the screen. 
+	<li>You will need to make a copy of <code>printStr</code> called <code>print2Str</code> that increments the <code>SI</code> pointer by 2 after printing each character. <strong>WHY?</strong>
+</ol>
+
+<p><strong>Stop and demo your working program to at TA.</strong>
+
+
+<h3>Part 2:</h3>
+<p>Make a copy of your lab81.asm file and call it <code>Lab8p2.asm</code>. <b>Modify the program</b> to print the string in the correct direction. To print the string, create a modified version of the <code>print2Str</code> subroutine (call it <code>printRevStr</code>) that DECREMENTS the <code>SI</code> pointer. When you call your new <code>printRevStr</code>, pass in the value of the <code>SP</code> as it was BEFORE any characters were added to the stack. After printing the string, remove it from the stack, print a blank line, then reprompt the user to enter another string. If the user enters an empty string, quit.
+<p>You will need to keep track of how many characters were entered so that you know how many characters to print/remove from the stack... 
+
+<p>You have to <b>create a flowchart</b> explaining the flow of logic before you start programming part 2. Call the TA to get the flowchart checked and then start working on the code. There are marks for the flowchart</p>
+					
+<H2>Hints</H2>
+<p><i>To find out what ASCII code is entered when the <code>ENTER</code> key is pressed, write a short program to accept one character, read that character into <code>AL</code>, then quit. You can set a breakpoint in your code and examine the ASCII code in <code>AL</code> to figure out what value is read when the user presses <code>ENTER</code>)</i>
+<p><i>Recall that <code>printStr()</code> requires the string to be terminated by the <code>'$'</code> character...
+<p><i>In Part II, you should remove the old string from the stack before your accept a new one...</i>
+
+</body>
+</html>
