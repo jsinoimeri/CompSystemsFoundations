@@ -1,0 +1,47 @@
+3 46 512 136   
+0000108HayStack820
+0001102220
+0002104420
+0003109920
+00FE121EndList'!'20
+00FF102Needle220
+010027466F756E6420746865206E6565646C6520617420696E6465782024FoundItMsg'Found the needle at index $'20
+011B184E6565646C65206E6F7420666F756E642024NotFoundMsg'Needle not found $'20
+02003B90000Mainmov CX, 020
+020348A06FF00mov AL, [Needle]20
+02073BE0000mov SI, HayStack20
+020A23A04isNeedlecmp AL, [SI]20
+020C27409jz Found20
+020E146inc SI20
+020F481FEFE00cmp SI, EndList20
+02132740Ajz notFound20
+0215275F3jnz isNeedle20
+0217289F1Foundmov CX, SI20
+02193BB0001mov BX, FoundItMsg20
+021C3E90300jmp LoadPort20
+021F3BB1B01notFoundmov BX, NotFoundMsg20
+02223BAE904LoadPortmov DX, 04E920
+022528A07CompareMsgmov AL, [BX]20
+022723C24cmp AL, '$'20
+022927405jz CompareIndex20
+022B1EEPrintMsgout DX, AL20
+022C143inc BX20
+022D3E9F5FFjmp CompareMsg20
+0230239F1CompareIndexcmp CX, SI20
+023227520jnz Quit20
+0234289C8MovIndexmov AX, CX20
+023633D6400cmp AX, 6420
+023927205jb Index1020
+023B2B164Index100mov CL, 6420
+023D3E90200jmp CalcIndex20
+02402B10AIndex10mov CL, 0A20
+02422F6F1CalcIndexdiv CL20
+0244288E1mov CL, AH20
+024620430PrintIndexadd AL, 3020
+02481EEout DX, AL20
+0249380F90Acmp CL, 0A20
+024C3E9E5FFjmp MovIndex20
+024F288C8mov AL, CL20
+025120430add AL, 3020
+02531EEout DX, AL20
+02541F4Quithlt20

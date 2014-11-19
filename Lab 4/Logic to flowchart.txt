@@ -1,0 +1,62 @@
+start
+
+founditmsg <- Found the needle
+notfounditmsg <- needle not found
+DisplayPort <- 04E9h
+HayStack <- 8, 2, 4, 9
+
+
+Needle <- user defined
+Index <- HayStack
+AH <- 0
+
+
+isNeedle:
+is Needle HayStack[index]?
+False:
+	index + 1
+
+	is index endlist?
+		False:
+			loop to isneedle (conditional jump)
+		True:
+			jump to notfound (conditional jump)
+
+True: [may not be needed]
+	jump to found (conditional jump)
+
+
+found:
+BX <- founditmsg
+AH <- index
+jump to LoadPort (unconditional jump)
+
+
+NotFound:
+BX <- notfounditmsg
+
+
+LoadPort:
+DX <- DisplayPort
+
+
+PrintMsg:
+AL <- [BX]
+AL -> DX
+
+BX + 1
+
+is AL '$'?
+loop to PrintMsg if not (conditional jump)
+
+is AH index?
+go to quit if not (conditional jump)
+
+
+PrintIndex:
+AL <- AH
+AL + 30h
+AL -> DX
+
+
+quit

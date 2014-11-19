@@ -1,0 +1,104 @@
+					; Lab 4
+					; indices 100-109, 200-209 are not displayed correctly
+					
+					
+					DisplayPort .EQU 04E9h
+					
+					.ORG 0000h
+					HayStack: 
+0000	08		 					.DB 8
+0001	02							.DB 2
+0002	04							.DB 4
+0003	09							.DB 9
+										
+					
+					.ORG 00FEh
+					EndList:
+00FE	21						 .DB '!'			; End of list of numbers
+										
+										
+					.ORG 00FFh
+					Needle:			; Value of needle
+00FF	02							.DB 2
+					
+					.ORG 0100h
+					Message:
+						FoundItMsg: 
+0100	466F756E..										.DB 'Found the needle at index $'
+						
+						NotFoundMsg: 
+011B	4E656564..										.DB 'Needle not found $'
+					
+					
+					.ORG 0200h
+					Main:								
+0200	B90000					MOV CX, 0 				; initialize CX to 0 in order to hold final value of pointer
+0203	8A06FF00					MOV AL, [Needle] 	; initialize AL to the value of needle
+						
+0207	BE0000					MOV  SI, HayStack	 	; Create pointer to HayStack
+						
+								isNeedle:
+020A	3A04											CMP AL, [SI] 	; Compares Pointer to AL
+020C	7409											JZ Found			; Found Needle in HayStack, jump to Found
+														
+														;SUB  SI, HayStack
+														
+020E	46											inc SI
+													
+020F	81FEFE00											CMP SI, EndList   ; Compares Pointer to end of list
+0213	740A											JZ notFound 			; Loops back to isNeedle if pointer is not at end of list
+0215	75F3											JNZ isNeedle			; Jumps to notFound if pointer is at end of list
+								
+								Found:
+0217	89F1											MOV CX, SI					  ; Value of pointer gets stored in AH
+0219	BB0001											MOV BX, FoundItMsg		; BX gets initalized to begining of message
+021C	E90300											JMP LoadPort					; Unconditional jump to LoadPort
+												
+								notFound:
+021F	BB1B01											MOV BX, NotFoundMsg		; BX gets initalized to begining of message
+								
+								LoadPort:
+0222	BAE904											MOV DX, DisplayPort	; Loads DisplayPort to DX
+														
+								CompareMsg:
+0225	8A07											MOV AL, [BX]			; Load individual characters of message into AL
+0227	3C24											CMP AL, '$'				; Compare AL with delimiter
+0229	7405											JZ CompareIndex		; Jump to CompareIndex if zero
+								
+								PrintMsg: 
+022B	EE											out DX, AL				; Display character on screen
+022C	43											inc BX						; increment BX
+022D	E9F5FF											JMP CompareMsg		; Unconditional jump to CompareMsg
+													
+								CompareIndex:
+0230	39F1													CMP CX, SI			; Compares AH with pointer
+0232	7520													JNZ Quit				; Jumps to Quit if not zero
+								
+								MovIndex:
+0234	89C8											MOV AX, CX
+0236	3D6400											CMP AX, 64h
+0239	7205											JB Index10
+					
+								Index100:
+023B	B164											MOV CL, 64h
+023D	E90200											JMP CalcIndex
+								Index10:
+0240	B10A										MOV CL, 0xAh
+								
+								CalcIndex:	
+0242	F6F1												DIV CL
+0244	88E1												MOV CL, AH
+															
+								PrintIndex:
+0246	0430												ADD AL, 30H			; Adds 30H to AL to turn into integer for display
+0248	EE												out DX, AL			; Displays the value of AL
+															
+0249	80F90A												CMP CL, 0xAh
+024C	E9E5FF												JMP MovIndex
+															
+024F	88C8												MOV AL, CL
+0251	0430												ADD AL, 30H			; Adds 30H to AL to turn into integer for display
+0253	EE												out DX, AL			; Displays the value of AL
+															
+								Quit: 			; Program done
+0254	F4								HLT
