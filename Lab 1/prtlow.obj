@@ -1,0 +1,16 @@
+3 15 13 43    
+00001348656C6C6F20576F726C642124Message'Hello World!$'20
+000D4C7C30000PrtStrmov BX, Message20
+00114C7C2E904mov DX, 04E920
+001528A07PrtCharmov AL, [BX]20
+001723C24cmp AL, '$'20
+00192740Fje EndPrt20
+001B23C7Acmp AL, 'z'20
+001D27707ja incPtr20
+001F23C61cmp AL, 'a'20
+002127302jae outPtr20
+002327201jb incPtr20
+00251EEoutPtrout DX, AL20
+0026143incPtrinc BX20
+00273E9EBFFjmp PrtChar20
+002A1F4EndPrthlt20
