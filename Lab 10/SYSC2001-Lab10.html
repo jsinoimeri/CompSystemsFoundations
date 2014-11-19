@@ -1,0 +1,49 @@
+<html>
+<h1>SYSC 2001 - LAB 10</h1>
+<head>
+<title> SYSC 2001 - Lab 10: IEEE-754 Floating Point Representation (Continued...)</title>
+<body>
+
+  <p><font size="+1"><u>Review the instructions for Lab9, since this lab is an extension of the previous lab.</u></font>
+
+<p>Make a copy of your lab9.asm file and call it lab10.asm. <b>Modify the program</b> to:
+<ol>
+	<li>Load <code>SUM</code> into a register and shift it into normalized form. <b>How would you do this?</b> Keep track of the number of shifts required since this will give you the exponent.
+  <b>CREATE A FLOWCHART showing how how you will use shifts and conditional jumps to determine the exponent required to normalize the number.</b>
+	<li>Add the required offset/bias to the exponent, and record it in a global variable called <code>EXP</code>.
+	<li>Build the 8-bit "quarter-precision" value from the <code>SIGN</code>, <code>EXP</code>, and <code>SUM</code> variables. This can be accomplished by suitable shifts and adds. <i>I suggest you work this out on paper before you try to code it... how would you combine three 8-bit registers to create a single 8-bit value?
+	<li>Your final 8-bit value should be stored in a global variable called <code>FP</code>.
+  <li>Write a subroutine called <code>printBinary</code> which prints the 8-bit binary contents of register <code>AL</code>.
+  <li>Modify your code to print to screen the final IEEE-754 formatted number as follows.
+  Your program output should look like this <i>(replace *** with MAX from Lab9; assume the user enters <code>+abc3def0</code> when prompted)</i>:
+<pre>
+Enter a signed dec num (up to +/-***): +30
+In quarter precision IEEE-754: 01111110
+</pre>
+</ol>
+
+<p><strong>Stop and demo your working program to at TA. You should be prepared to demonstrate the following test cases: 
+<ol>
+	<li>"+30"
+	<li>"-13"
+	<li>"b-1a2"
+</ol></strong>
+<br><i>Note that your code should work for ANY valid number, not just these three!</i></strong>
+
+					
+<hr><H2>Hints</H2>
+<ul>
+	<li><i>You may want to review the <a href="http://www.c-jump.com/CIS77/ASM/Assembly/lecture.html#A77_0370_shift_instructions">various forms of shift/rotate</a> from lab3.</i>
+</ul>
+
+<HR><H2>Bonus</H2>
+<p>Modify your program output to look like this <i>(assume the user enters <code>+abc3def0</code> when prompted)</i>:
+<pre>
+Enter a signed dec num (up to +/-MAX): +30
+In normalized form: +1.11100000 x 2^4
+In quarter precision IEEE-754: 01111110
+</pre>
+<br>I suggest that you write a subroutine called <code>printSign</code> which prints either a '-' or '+' depending on the value in <code>AL</code>, and look at <code>printInt</code> from past labs.
+
+</body>
+</html>

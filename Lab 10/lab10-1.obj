@@ -1,0 +1,152 @@
+3 151 4415 371   
+0000100SIGN020
+0001100SUM020
+0002100EXP020
+0003100FP020
+1000150printStrpush AX20
+1001156push SI20
+1002152push DX20
+10033BAE904mov DX, 04E9H20
+100628A04LoopPSmov AL, [SI]20
+100823C24cmp AL, '$'20
+100A27405je quitPS20
+100C1EEout DX, AL20
+100D146inc SI20
+100E3E9F5FFjmp LoopPS20
+101115AquitPSpop DX20
+101215Epop SI20
+1013158pop AX20
+10141C3ret20
+1015150newLinepush AX20
+1016152push DX20
+10173BAE904mov DX, 04E9H20
+101A2B00Amov AL, 0AH20
+101C1EEout DX, AL20
+101D2B00Dmov AL, 0DH20
+101F1EEout DX, AL20
+102015Apop DX20
+1021158pop AX20
+10221C3ret20
+1023152getCharpush DX20
+10243BA6400GCWaitmov DX, 64H20
+10271ECin AL, DX20
+102823C00cmp AL, 020
+102A274F8jz GCWait20
+102C3BA6000mov DX, 60H20
+102F1ECin AL, DX20
+103015AGCDonepop DX20
+10311C3ret20
+10323E8EEFFgetSigncall getChar20
+103523C2Bcmp AL, '+'20
+103727409je plus_sign20
+103923C2Dcmp AL, '-'20
+103B275F5jne getSign20
+103D2B401neg_signmov AH, 120
+103F3E90200jmp print_sign20
+10422B400plus_signmov AH, 020
+10443BAE904print_signmov DX, 04E9H20
+10471EEout DX, AL20
+1048288E0mov AL, AH20
+104A1C3ret20
+104B3E8D5FFgetDigitcall getChar20
+104E23C0Acmp AL, 0AH20
+105027503jne skipGD20
+10522B063mov AL, 9920
+10541C3ret20
+105523C30skipGDcmp AL, 30H20
+1057272F2jb getDigit20
+105923C39cmp AL, 39H20
+105B277EEja getDigit20
+105D152push DX20
+105E3BAE904mov DX, 04E9H20
+10611EEout DX, AL20
+106215Apop DX20
+106322C30sub AL, 30H20
+10651C3ret20
+1066151getNumberpush CX20
+10672B500mov CH, 020
+10692B10Amov CL, 1020
+106B3E8DDFFloopGNcall getDigit20
+106E23C63cmp AL, 9920
+10702740Dje doneGN20
+1072150push AX20
+1073288E8mov AL, CH20
+10752F6E1mul CL20
+1077288C5mov CH, AL20
+1079158pop AX20
+107A200C5add CH, AL20
+107C3E9ECFFjmp loopGN20
+107F288E8doneGNmov AL, CH20
+1081159pop CX20
+10821C3ret20
+1083150normalizepush AX20
+1084151push CX20
+108548A060100mov AL, [SUM]20
+10892B108mov CL, 820
+108B2FEC9rshiftdec CL20
+108D3C0E001shl AL, 120
+109027203jc doneShifter20
+10923E9F6FFjmp rshift20
+1095380C103doneShifteradd CL, 320
+10984880E0200mov [EXP], CL20
+109C3C0E804rshift2shr AL, 420
+109F488060100mov [SUM], AL20
+10A3159pop CX20
+10A4158pop AX20
+10A51C3ret20
+10A6150fillFPpush AX20
+10A7151push CX20
+10A848A260100mov AH, [SUM]20
+10AC2B104mov CL, 420
+10AE2FEC9mantdec CL20
+10B03C1E801shr AX, 120
+10B3380F900cmp CL, 020
+10B6275F6jne mant20
+10B848A260200mov AH, [EXP]20
+10BC2B103mov CL, 320
+10BE2FEC9expodec CL20
+10C03C1E801shr AX, 120
+10C3380F900cmp CL, 020
+10C6275F6jne expo20
+10C848A260000mov AH, [SIGN]20
+10CC3C1E801shr AX, 120
+10CF488060300storemov [FP], AL20
+10D3159pop CX20
+10D4158pop AX20
+10D51C3ret20
+10D6150outFPpush AX20
+10D7153push BX20
+10D8152push DX20
+10D92B408mov AH, 820
+10DB48A1E0300mov BL, [FP]20
+10DF3BAE904mov DX, 04E9H20
+10E23C1E301outputshl BX, 120
+10E52FECCdec AH20
+10E7288F8mov AL, BH20
+10E92B700mov BH, 020
+10EB20430add AL, 30H20
+10ED1EEout DX, AL20
+10EE380FC00cmp AH, 020
+10F1275EFjne output20
+10F315Apop DX20
+10F415Bpop BX20
+10F5158pop AX20
+10F61C3ret20
+10F740456E7465722061207369676E656420646563206E756D2028757020746F202B2F2D313237293A2024Message1'Enter a signed dec num (up to +/-127): $'20
+111F32496E207175617274657220707265636973696F6E20494545452D3735343A2024Message2'In quarter precision IEEE-754: $'20
+113F3BEF710mainmov SI, Message120
+11423E8BBFEcall printStr20
+11453E8CDFEcall newLine20
+11482B000mov AL, 020
+114A488060100mov [SUM], AL20
+114E3E8E1FEpart1call getSign20
+1151488060000mov [SIGN], AL20
+11553E80EFFcall getNumber20
+1158488060100mov [SUM], AL20
+115C3E8B6FEpart2call newLine20
+115F3BE1F11mov SI, Message220
+11623E81EFFcall normalize20
+11653E898FEcall printStr20
+11683E83BFFcall fillFP20
+116B3E868FFcall outFP20
+116E1F4hlt20
