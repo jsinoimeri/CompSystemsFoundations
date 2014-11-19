@@ -1,0 +1,98 @@
+<html>
+
+<head>
+ <title>SYSC2001 - Lab 2 - Part a</title>
+</head>
+
+<body>
+
+<h1>SYSC 2001 LAB3</h1>
+
+<p>This week, you will implement the "add &amp; shift" method of unsigned multiplication that we learned in class.
+
+Follow the instructions below. <u>Write down your answers to any questions that appear <b>in bold</b></u>.
+
+<h2>Part 0: Review Add &amp; Shift Multiplication</h2>
+<hr>
+<p>In this lab, we will be implementing the Add &amp; Shift Multiplication algorithm described in the notes. 
+Please review slides 26-32 of the <b>SYSC2001-Ch10-Int.pdf -- ALU-INT</b> slides that describe this algorithm. 
+<p><b>In particular, please open the flowchart on slide 32. You will have to explain how your code matches the flowchart at the end of the lab.</b>
+
+<h2>Part 1: Shift, Rotate, and Rotate With Carry</h2>
+<hr>
+<p>In addition to the instructions listed in the <code>p86 Reference Sheet</code> there are  a 
+number of instructions for shifting or rotating bits within a register. Considering that we need to shift from F->A->Q as part
+of the shift &amp; add multiplication algorithm, it's worth learning the difference here. Please read 
+<a href="http://www.c-jump.com/CIS77/ASM/Assembly/lecture.html#A77_0370_shift_instructions">sections 38 through 43</a> 
+of the <a href="http://www.c-jump.com/CIS77/ASM/Assembly/lecture.html">Introduction to x86 Assembly Language</a> page. 
+
+<p><strong>Complete the following table:</strong>
+<blockquote>
+	<table border="1">
+	<TR><TH align="center">Instructions<TH align="center">Final value in AL (in Hex)<TH align="center">Final value of carry flag (0/1)</TR>
+	<TR><TD><code>MOV AL,0FFh<br>ADD AL,2h<br>SHR AL,1</code><TD align="center">?<TD align="center">?</tr>
+	<TR><TD><code>MOV AL,0FFh<br>ADD AL,2h<br>ROR AL,1</code><TD align="center">?<TD align="center">?</tr>
+	<TR><TD><code>MOV AL,0FFh<br>ADD AL,2h<br>RCR AL,1</code><TD align="center">?<br><i>(mind the carry flag!)</i><TD align="center">?</tr>
+	</table>
+</blockquote>
+
+<p>Considering that we will be using <code>AH</code> as our <code>A</code> (accumulator) register, and that 
+the final 16-bit answer will occupy <code>AX</code>, then we need a way to:
+<ol><li>shift the <code>carry flag</code>
+into the MSb of <code>AH</code>,
+<li>right-shift all of AH,
+<li>shift the LSb of <code>AH</code> into the MSb of <code>AL</code>, and
+<li>right-shift all of <code>AL</code>.</ol>
+
+This is illustrated below:<br> <IMG src="http://www.sce.carleton.ca/courses/sysc-2001/f13/SYSC2001-Lab3.png">
+
+<p><b>What shift or rotate instruction can accomplish all of these tasks in a single instruction?</b>
+
+<p><B>Stop and demonstrate your answers above to the TA before proceeding to Part 2</b>
+
+
+<h2>Part 2: Implementing 8-bit shift &amp; add unsigned multiplication in Libra</h2>
+
+<hr size=1 width="100%" align=center>
+
+ 
+<p>Download the source file <b><code>lab3.asm</code></b> and save-as to your new "Lab3" directory on your M-drive. 
+	This file contains all the comments for a program to implement shift &amp; add 8-bit unsigned multiplication, but most of the actual
+	instructions are gone. Open lab3.asm using Notepad++, and complete all the missing instructions. Use the comments as clues. 
+	<U>Note that you should not have to add any additional lines to the program, just fill in the missing instructions.</u>
+
+<p><b>IMPORTANT:</b> Note that in the version taught in class, we used a single register (<code>Q</code>) to do two things: 
+<ol><li>Hold the multiplier (X), and examine each bit one-by-one
+	<li>Hold the LSB of the product
+</ol>
+	<u>In this implementation, we will use two different registers for these two different tasks.</u> <code>AL</code> will hold the LSB of the result, while
+	<code>CH</code> will hold the multiplier (X). To examine Q[0] (i.e. the LSb of <code>CH</code>), 
+	you will have use an appropriate shift or rotate instruction to transfer that bit into the carry flag, then check the carry flag...
+	
+<p><b>Looking at the data given in the code, what product (result) are you expecting?</b>. <b>Where will you look for your product when the code is finished?</b>
+	
+<p>Once your code is complete, try to assemble it and check the listing file for any errors. Do not proceed until your code assembles without errors.
+
+<p>Load your code into Libra and run it. Check your product against your expected answer. 
+
+<p>Reset your code. <b>Modify the contents of memory (not your asm code) to multiply your decimal age <i>(convert to hex)</i> by the last two decimal digits of your student ID <i>(convert to hex)</i>.</b>
+
+
+<p>Demonstrate and <u>explain</u> your code to a TA. <b>Explain how each line of your code corresponds to parts of the <u>flowchart</u> on slide 32 of the <u>SYSC2001-Ch10-Int.pdf -- ALU-INT</u> slides.</b>
+
+<p><strong>Remember to add comments to your program to explain any lines you change or add!</strong>
+<p><strong>Use the <u>submit program</u> to submit your final lab3.asm file. </strong>
+
+<H2>Hints &amp; Reminders:</H2><hr>
+<ul>
+	<li>There is an Assembler reference sheet which you may find useful (<b>p86reference.pdf</b>).
+	<li>Remember to use the 'single-step' feature of Libra to slowly step through your program and make sure it works the way you want it to. This is a very useful <b>debugging</b> tool!
+	<li>Every time you make a change to your code, you must:<ol><li>Save the ASM file in Notepad++<li>Re-assemble the file<li>Re-check the LST file for errors<li>Reload the OBJ file in Libra<li>Rerun your program</ol>
+</ul>
+
+<hr>
+
+<p><b>Good Luck!</b></p>
+
+</body>
+</html>
